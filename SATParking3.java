@@ -13,7 +13,7 @@ import org.jacop.search.SelectChoicePoint;
 import org.jacop.search.SimpleSelect;
 import org.jacop.search.SmallestDomain;
 
-public class SATParking2 {
+public class SATParking3 {
 public static void main(String[] args) {
 
         String filename = args[0];
@@ -64,21 +64,162 @@ public static void main(String[] args) {
                 SatWrapper satWrapper = new SatWrapper();
                 store.impose(satWrapper);
 
-                BooleanVar[] a = new BooleanVar[lane_number*locations];
-                BooleanVar[] b = new BooleanVar[lane_number*locations];
-                BooleanVar[] c = new BooleanVar[lane_number*locations];
-                BooleanVar[] empty = new BooleanVar[lane_number*locations];
-		int literalA
-		int literalB
-		int literalC	
-		int literalEmpty
+                BooleanVar[][] a = new BooleanVar[lane_number][locations];
+                BooleanVar[][] b = new BooleanVar[lane_number][locations];
+                BooleanVar[][] c = new BooleanVar[lane_number][locations];
+                BooleanVar[][] empty = new BooleanVar[lane_number][locations];
+		int literalA[][] = new int[lane_number][locations];
+		int literalB[][] = new int[lane_number][locations];
+		int literalC[][] = new int[lane_number][locations];
+		int literalEmpty[][] = new int[lane_number][locations];
 
-		BooleanVar[] allVariables = new BooleanVar[lane_number*locations];
+		for (int i = 0; i<lane_number; i++) {
+			for (int k = 0; k<locations; k++) {
+				a[i][k] = new BooleanVar(store, "SPOT: [" +i+ ","+k+ "] has category A");
+				b[i][k] = new BooleanVar(store, "SPOT: [" +i+ ","+k+ "] has category B");
+				c[i][k] = new BooleanVar(store, "SPOT: [" +i+ ","+k+ "] has category C");
+				empty[i][k] = new BooleanVar(store, "SPOT: [" +i+ ","+k+ "] is empty");
+		            	satWrapper.register(a[i][k]);
+		            	satWrapper.register(b[i][k]);
+		            	satWrapper.register(c[i][k]);
+		            	satWrapper.register(empty[i][k]);
+
+				switch(category[i][k]){
+					case "A":
+						literalA[i][k] = satWrapper.cpVarToBoolVar(a[i][k], 1, true);	
+						literalB[i][k] = satWrapper.cpVarToBoolVar(b[i][k], 1, true);
+						literalC[i][k] = satWrapper.cpVarToBoolVar(c[i][k], 1, true);
+						literalEmpty[i][k] = satWrapper.cpVarToBoolVar(empty[i][k], 1, true);
+						addClause(satWrapper,literalA[i][k],-literalB[i][k],-literalC[i][k],-literalEmpty[i][k]);
+						if(k > 0 && k < locations-1){
+							if(!parking[i][k+1].equals("__") && !parking[i][k-1].equals("__")){
+								if(category[i][k].charAt(0) > category[i][k+1].charAt(0) || category[i][k].charAt(0) > category[i][k-1].charAt(0)){
+									literalB[i][k+1] = satWrapper.cpVarToBoolVar(b[i][k+1], 1, true);
+									literalC[i][k+1] = satWrapper.cpVarToBoolVar(c[i][k+1], 1, true);
+									literalB[i][k-1] = satWrapper.cpVarToBoolVar(b[i][k-1], 1, true);
+									literalC[i][k-1] = satWrapper.cpVarToBoolVar(c[i][k-1], 1, true);
+									addClause(satWrapper,-literalB[i][k+1],-literalC[i][k+1]);	
+									addClause(satWrapper,-literalB[i][k-1],-literalC[i][k-1]);			
+								}
+
+								if(category[i][k].equals(category[i][k+1]) && category[i][k].equals(category[i][k-1])){
+									if(Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k+1]) || Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k-1])){
+										literalA[i][k+1] = satWrapper.cpVarToBoolVar(a[i][k+1], 1, true);
+										literalA[i][k-1] = satWrapper.cpVarToBoolVar(a[i][k-1], 1, true);
+										addClause(satWrapper,literalA[i][k+1],literalA[i][k-1]);	
+									}													
+								}
+							}
+							else{
+								//literalEmpty[i][k+1] = satWrapper.cpVarToBoolVar(empty[i][k+1], 1, true);
+								//literalEmpty[i][k-1] = satWrapper.cpVarToBoolVar(empty[i][k-1], 1, true);
+								//addClause(satWrapper,literalEmpty[i][k+1]);	
+								//addClause(satWrapper,literalEmpty[i][k-1]);
+								break;
+							}
+						}
+						else{
+							literalEmpty[i][k] = satWrapper.cpVarToBoolVar(empty[i][k], 1, true);
+							addClause(satWrapper,-literalEmpty[i][k]);
+						}
+					break;
+					
+					case "B":
+						literalA[i][k] = satWrapper.cpVarToBoolVar(a[i][k], 1, true);	
+						literalB[i][k] = satWrapper.cpVarToBoolVar(b[i][k], 1, true);
+						literalC[i][k] = satWrapper.cpVarToBoolVar(c[i][k], 1, true);
+						literalEmpty[i][k] = satWrapper.cpVarToBoolVar(empty[i][k], 1, true);
+						addClause(satWrapper,-literalA[i][k],literalB[i][k],-literalC[i][k],-literalEmpty[i][k]);
+						if(k > 0 && k < locations-1){
+							if(!parking[i][k+1].equals("__") && !parking[i][k-1].equals("__")){
+								if(category[i][k].charAt(0) > category[i][k+1].charAt(0) || category[i][k].charAt(0) > category[i][k-1].charAt(0)){
+									literalC[i][k+1] = satWrapper.cpVarToBoolVar(c[i][k+1], 1, true);
+									literalC[i][k-1] = satWrapper.cpVarToBoolVar(c[i][k-1], 1, true);
+									addClause(satWrapper,-literalC[i][k+1]);	
+									addClause(satWrapper,-literalC[i][k-1]);			
+								}
+
+								if(category[i][k].equals(category[i][k+1]) && category[i][k].equals(category[i][k-1])){
+									if(Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k+1]) || Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k-1])){
+										literalB[i][k+1] = satWrapper.cpVarToBoolVar(b[i][k+1], 1, true);
+										literalB[i][k-1] = satWrapper.cpVarToBoolVar(b[i][k-1], 1, true);
+										addClause(satWrapper,literalB[i][k+1],literalB[i][k-1]);	
+									}													
+								}
+							}
+							else{
+								//literalEmpty[i][k+1] = satWrapper.cpVarToBoolVar(empty[i][k+1], 1, true);
+								//literalEmpty[i][k-1] = satWrapper.cpVarToBoolVar(empty[i][k-1], 1, true);
+								//addClause(satWrapper,literalEmpty[i][k+1]);	
+								//addClause(satWrapper,literalEmpty[i][k-1]);
+								break;
+							}
+						}
+						else{
+							literalEmpty[i][k] = satWrapper.cpVarToBoolVar(empty[i][k], 1, true);
+							addClause(satWrapper,-literalEmpty[i][k]);
+						}
+					break;
+					
+					case "C":
+						literalA[i][k] = satWrapper.cpVarToBoolVar(a[i][k], 1, true);	
+						literalB[i][k] = satWrapper.cpVarToBoolVar(b[i][k], 1, true);
+						literalC[i][k] = satWrapper.cpVarToBoolVar(c[i][k], 1, true);
+						literalEmpty[i][k] = satWrapper.cpVarToBoolVar(empty[i][k], 1, true);
+						addClause(satWrapper,-literalA[i][k],literalB[i][k],-literalC[i][k],-literalEmpty[i][k]);
+						if(k > 0 && k < locations-1){
+							if(!parking[i][k+1].equals("__") && !parking[i][k-1].equals("__")){
+								if(category[i][k].equals(category[i][k+1]) && category[i][k].equals(category[i][k-1])){
+									if(Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k+1]) || Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k-1])){
+										literalC[i][k+1] = satWrapper.cpVarToBoolVar(c[i][k+1], 1, true);
+										literalC[i][k-1] = satWrapper.cpVarToBoolVar(c[i][k-1], 1, true);
+										addClause(satWrapper,literalC[i][k+1],literalC[i][k-1]);	
+									}													
+								}
+							}
+							else{
+								//literalEmpty[i][k+1] = satWrapper.cpVarToBoolVar(empty[i][k+1], 1, true);
+								//literalEmpty[i][k-1] = satWrapper.cpVarToBoolVar(empty[i][k-1], 1, true);
+								//addClause(satWrapper,literalEmpty[i][k+1]);	
+								//addClause(satWrapper,literalEmpty[i][k-1]);
+								break;
+							}
+						}
+						else{
+							literalEmpty[i][k] = satWrapper.cpVarToBoolVar(empty[i][k], 1, true);
+							addClause(satWrapper,-literalEmpty[i][k]);
+						}
+					break;
+		
+					default: break;			
+				}
+			}
+		}
+
+		BooleanVar[] allVariables = new BooleanVar[lane_number*locations*4];
 		int count = 0;
 
 		for (int i = 0; i<lane_number; i++) {
                   	for (int k = 0; k<locations; k++) {
 				allVariables[count] = a[i][k];
+				count++;
+			}
+		}
+		for (int i = 0; i<lane_number; i++) {
+                  	for (int k = 0; k<locations; k++) {
+				allVariables[count] = b[i][k];
+				count++;
+			}
+		}
+		for (int i = 0; i<lane_number; i++) {
+                  	for (int k = 0; k<locations; k++) {
+				allVariables[count] = c[i][k];
+				count++;
+			}
+		}
+		for (int i = 0; i<lane_number; i++) {
+                  	for (int k = 0; k<locations; k++) {
+				allVariables[count] = empty[i][k];
 				count++;
 			}
 		}
@@ -103,9 +244,23 @@ public static void main(String[] args) {
 
       }
 
-public static void addClause(SatWrapper satWrapper, int literal1){
+		public static void addClause(SatWrapper satWrapper, int literal1){
 			IntVec clause = new IntVec(satWrapper.pool);
 			clause.add(literal1);
+			satWrapper.addModelClause(clause.toArray());
+		}
+		public static void addClause(SatWrapper satWrapper, int literal1, int literal2){
+			IntVec clause = new IntVec(satWrapper.pool);
+			clause.add(literal1);
+			clause.add(literal2);
+			satWrapper.addModelClause(clause.toArray());
+		}
+		public static void addClause(SatWrapper satWrapper, int literal1, int literal2, int literal3, int literal4){
+			IntVec clause = new IntVec(satWrapper.pool);
+			clause.add(literal1);
+			clause.add(literal2);
+			clause.add(literal3);
+			clause.add(literal4);
 			satWrapper.addModelClause(clause.toArray());
 		}
 }

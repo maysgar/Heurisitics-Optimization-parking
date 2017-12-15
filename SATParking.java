@@ -199,12 +199,12 @@ public static void main(String[] args) {
 
                 //Constraints
                 for (int i = 0; i<lane_number; i++) {
-                  for (int k = 0; k<locations; k++) {
-                    addClause(satWrapper,literalCarFrontCat[i][k],literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalSameBehindCat[i][k]); 
-                    addClause(satWrapper,literalCarFrontCat[i][k],literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalTimeBehind[i][k]);  
-                    addClause(satWrapper,literalCarFrontCat[i][k],literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeFront[i][k]); 
-                    addClause(satWrapper,literalCarFrontCat[i][k],literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeBehind[i][k]);
-                  }
+                  	for (int k = 0; k<locations; k++) {
+                    		addClause(satWrapper,literalCarFrontCat[i][k],literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalSameBehindCat[i][k]); 
+                    		addClause(satWrapper,literalCarFrontCat[i][k],literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalTimeBehind[i][k]);  
+                    		addClause(satWrapper,literalCarFrontCat[i][k],literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeFront[i][k]); 
+                    		addClause(satWrapper,literalCarFrontCat[i][k],literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeBehind[i][k]);
+                  	}
                 }
 
                 //Solve

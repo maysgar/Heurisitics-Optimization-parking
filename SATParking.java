@@ -189,83 +189,113 @@ public static void main(String[] args) {
 				BooleanVar[] allVariables = new BooleanVar[locations*lane_number*6];
 				int count = 0;
 				for(int i = 0; i<lane_number; i++){
-				  for(int k = 0; k<locations; k++){
-					allVariables[count] = timeFront[i][k];
-					count++;
-				  }
-						}
+					for(int k = 0; k<locations; k++){
+						allVariables[count] = timeFront[i][k];
+						count++;
+					}
+				}
 				for(int i = 0; i<lane_number; i++){
-				  for(int k = 0; k<locations; k++){
-					allVariables[count] = timeBehind[i][k];
-					count++;
-				  }
-						}
+					for(int k = 0; k<locations; k++){
+						allVariables[count] = timeBehind[i][k];
+						count++;
+					}
+				}
 				for(int i = 0; i<lane_number; i++){
-				  for(int k = 0; k<locations; k++){
-					allVariables[count] = carFrontCat[i][k];
-					count++;
-				  }
-						}
+					for(int k = 0; k<locations; k++){
+						allVariables[count] = carFrontCat[i][k];
+						count++;
+					}
+				}
 				for(int i = 0; i<lane_number; i++){
-				  for(int k = 0; k<locations; k++){
-					allVariables[count] = carBehindCat[i][k];
-					count++;
-				  }
-						}
+					for(int k = 0; k<locations; k++){
+						allVariables[count] = carBehindCat[i][k];
+						count++;
+					}
+				}
 				for(int i = 0; i<lane_number; i++){
-				  for(int k = 0; k<locations; k++){
-					allVariables[count] = sameFrontCat[i][k];
-					count++;
-				  }
-						}
+					for(int k = 0; k<locations; k++){
+						allVariables[count] = sameFrontCat[i][k];
+						count++;
+					}
+				}
 				for(int i = 0; i<lane_number; i++){
-				  for(int k = 0; k<locations; k++){
-					allVariables[count] = sameBehindCat[i][k];
-					count++;
-				  }
-						}
+					for(int k = 0; k<locations; k++){
+						allVariables[count] = sameBehindCat[i][k];
+						count++;
+					}
+				}
+						
+				String[] move = new String[]{"Move Right","Move Left"};
+				boolean[][] blocked = new boolean[lane_number][locations];
+				//Right position that sets in between position free == 0; Left position == 1
+				boolean[][][] pos = new boolean[lane_number][locations][2];
 
-						//Constraints
-						for (int i = 0; i<lane_number; i++) {
-							for (int k = 0; k<locations; k++) {
-								addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalSameBehindCat[i][k]); 
-								addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalTimeBehind[i][k]);  
-								addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeFront[i][k]); 
-								addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeBehind[i][k]);
+				//Constraints
+				for (int i = 0; i<lane_number; i++) {
+					for (int k = 0; k<locations; k++) {
+						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalSameBehindCat[i][k]); 
+						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalTimeBehind[i][k]);  
+						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeFront[i][k]); 
+						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeBehind[i][k]);
+						//checkear aqui si está blocked y storear en matriz para printear por donde sale el coche en pos[i][k]
+					}
+				}
+
+				//Solve
+				Search<BooleanVar> search = new DepthFirstSearch<BooleanVar>();
+				SelectChoicePoint<BooleanVar> select = new SimpleSelect<BooleanVar>(allVariables,
+						 new SmallestDomain<BooleanVar>(), new IndomainMin<BooleanVar>());
+				Boolean result = search.labeling(store, select);	
+
+				//value = var.value();
+
+				//If result is true -> car is not blocked
+				PrintWriter writer = new PrintWriter("output.txt","UTF-8");
+				if(result){
+					System.out.println("Satisfiable: No Car Blocked");
+					for(int i = 0; i<lane_number; i++){
+						for(int k = 0; k<locations; k++){
+							if(k == 0){
+								//Move to the left if its in the far left column
+								writer.print("Car in pos: [" + i + "," + k + "] has to " + move[1]);
+							}
+							else if(k == (locations-1)){
+								//Move to the right if its in the far right column
+								writer.print("Car in pos: [" + i + "," + k + "] has to " + move[0]);
+							}
+							else if(){
+								writer.print("Car in pos: [" + i + "," + k + "] has to " + move[0]);
+							}
+							else if(){
+								writer.print("Car in pos: [" + i + "," + k + "] has to " + move[1]);
+							}
+							else{
+								continue;
 							}
 						}
-
-						//Solve
-						Search<BooleanVar> search = new DepthFirstSearch<BooleanVar>();
-						SelectChoicePoint<BooleanVar> select = new SimpleSelect<BooleanVar>(allVariables,
-								 new SmallestDomain<BooleanVar>(), new IndomainMin<BooleanVar>());
-						Boolean result = search.labeling(store, select);
-
-				if(result) System.out.println("Satisfiable: No Car Blocked");
+					}
+				}
 				else{System.out.println("Unsatisfiable: One or More Cars Are Blocked");}
 
 
-				} //Try
+			} //Try
 
         catch(IOException ex) {
-                System.out.println("Error reading file '" + filename + "'");
+            System.out.println("Error reading file '" + filename + "'");
         }
-        
-        
+    }
 
-      }
-
-		public static void addClause(SatWrapper satWrapper, int literal1){
-			IntVec clause = new IntVec(satWrapper.pool);
-			clause.add(literal1);
-			satWrapper.addModelClause(clause.toArray());
-		}
-		public static void addClause(SatWrapper satWrapper, int literal1, int literal2, int literal3, int literal4){
-			IntVec clause = new IntVec(satWrapper.pool);
-			clause.add(literal1);
-			clause.add(literal2);
-			clause.add(literal3);
-			clause.add(literal4);
-			satWrapper.addModelClause(clause.toArray());
-		}
+	public static void addClause(SatWrapper satWrapper, int literal1){
+		IntVec clause = new IntVec(satWrapper.pool);
+		clause.add(literal1);
+		satWrapper.addModelClause(clause.toArray());
+	}
+	public static void addClause(SatWrapper satWrapper, int literal1, int literal2, int literal3, int literal4){
+		IntVec clause = new IntVec(satWrapper.pool);
+		clause.add(literal1);
+		clause.add(literal2);
+		clause.add(literal3);
+		clause.add(literal4);
+		satWrapper.addModelClause(clause.toArray());
+	}
 }

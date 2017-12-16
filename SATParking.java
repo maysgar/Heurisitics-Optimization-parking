@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import org.jacop.core.BooleanVar;
 import org.jacop.core.Store;
 import org.jacop.jasat.utils.structures.IntVec;
@@ -225,10 +226,58 @@ public static void main(String[] args) {
 					}
 				}
 						
-				String[] move = new String[]{"Move Right","Move Left"};
+				String[] move = new String[]{"move Right","move Left"};
 				boolean[][] blocked = new boolean[lane_number][locations];
 				//Right position that sets in between position free == 0; Left position == 1
 				boolean[][][] pos = new boolean[lane_number][locations][2];
+				
+				//Loop checking if car is blocked by brute force conditions to set up a boolean var 
+				for(int i = 0; i<lane_number; i++){
+					for(int k = 1; k<locations-1; k++){
+						switch(category[i][k]){
+							case "A":
+								if(category[i][k+1].equals("__") || (category[i][k+1].charAt(0) < category[i][k].charAt(0)) || (category[i][k+1].equals("A") && (Integer.parseInt(arrival[i][k+1]) < Integer.parseInt(arrival[i][k])))){
+									blocked[i][k] = false;
+									pos[i][k][0] = true;
+								}
+								else if(category[i][k-1].equals("__") || (category[i][k-1].charAt(0) < category[i][k].charAt(0)) || (category[i][k-1].equals("A") && (Integer.parseInt(arrival[i][k-1]) < Integer.parseInt(arrival[i][k])))) {
+									blocked[i][k] = false;
+									pos[i][k][1] = true;
+								}
+								else{
+									blocked[i][k] = true;
+								}
+							break;
+
+							case "B":
+								if(category[i][k+1].equals("__") || (category[i][k+1].charAt(0) < category[i][k].charAt(0)) || (category[i][k+1].equals("B") && (Integer.parseInt(arrival[i][k+1]) < Integer.parseInt(arrival[i][k])))){
+									blocked[i][k] = false;
+									pos[i][k][0] = true;
+								}
+								else if(category[i][k-1].equals("__") || (category[i][k-1].charAt(0) < category[i][k].charAt(0)) || (category[i][k-1].equals("B") && (Integer.parseInt(arrival[i][k-1]) < Integer.parseInt(arrival[i][k])))) {
+									blocked[i][k] = false;
+									pos[i][k][1] = true;
+								}
+								else{
+									blocked[i][k] = true;
+								}
+							break;
+
+							case "C":
+								if(category[i][k+1].equals("__") || (category[i][k+1].charAt(0) < category[i][k].charAt(0)) || (category[i][k+1].equals("C") && (Integer.parseInt(arrival[i][k+1]) < Integer.parseInt(arrival[i][k])))){
+									blocked[i][k] = false;
+									pos[i][k][0] = true;
+								}
+								else if(category[i][k-1].equals("__") || (category[i][k-1].charAt(0) < category[i][k].charAt(0)) || (category[i][k-1].equals("C") && (Integer.parseInt(arrival[i][k-1]) < Integer.parseInt(arrival[i][k])))) {
+									blocked[i][k] = false;
+									pos[i][k][1] = true;
+								}
+								else{
+									blocked[i][k] = true;
+								}
+						}
+					}
+				}
 
 				//Constraints
 				for (int i = 0; i<lane_number; i++) {
@@ -237,7 +286,6 @@ public static void main(String[] args) {
 						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalTimeBehind[i][k]);  
 						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeFront[i][k]); 
 						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeBehind[i][k]);
-						//checkear aqui si está blocked y storear en matriz para printear por donde sale el coche en pos[i][k]
 					}
 				}
 
@@ -247,27 +295,30 @@ public static void main(String[] args) {
 						 new SmallestDomain<BooleanVar>(), new IndomainMin<BooleanVar>());
 				Boolean result = search.labeling(store, select);	
 
-				//value = var.value();
-
 				//If result is true -> car is not blocked
-				PrintWriter writer = new PrintWriter("output.txt","UTF-8");
 				if(result){
+					//PrintWriter writer = new PrintWriter("output.txt","UTF-8");
 					System.out.println("Satisfiable: No Car Blocked");
 					for(int i = 0; i<lane_number; i++){
 						for(int k = 0; k<locations; k++){
-							if(k == 0){
+							if(parking[i][k].equals("__")){
+								System.out.println("No car here");
+							}
+							else if(k == 0){
 								//Move to the left if its in the far left column
-								writer.print("Car in pos: [" + i + "," + k + "] has to " + move[1]);
+								System.out.println("Car in pos: [" + i + "," + k + "] has to " + move[1]);
 							}
 							else if(k == (locations-1)){
 								//Move to the right if its in the far right column
-								writer.print("Car in pos: [" + i + "," + k + "] has to " + move[0]);
+								System.out.println("Car in pos: [" + i + "," + k + "] has to " + move[0]);
 							}
-							else if(){
-								writer.print("Car in pos: [" + i + "," + k + "] has to " + move[0]);
+							else if(!blocked[i][k] && pos[i][k][0]){
+								//Move right 
+								System.out.println("Car in pos: [" + i + "," + k + "] has to " + move[0]);
 							}
-							else if(){
-								writer.print("Car in pos: [" + i + "," + k + "] has to " + move[1]);
+							else if(!blocked[i][k] && pos[i][k][1]){
+								//Move left
+								System.out.println("Car in pos: [" + i + "," + k + "] has to " + move[1]);
 							}
 							else{
 								continue;

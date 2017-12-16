@@ -337,7 +337,8 @@ public static void main(String[] args) {
 
 				//If result is true -> car is not blocked
 				if(result){
-					PrintWriter writer = new PrintWriter(filename+".output","UTF-8");
+          String newFile = filename.subString(0,charAt('.'))+"output";
+					PrintWriter writer = new PrintWriter(newFile,"UTF-8");
 					System.out.println("Satisfiable: No Car Blocked");
 					for(int i = 0; i<lane_number; i++){
 						for(int k = 0; k<locations; k++){

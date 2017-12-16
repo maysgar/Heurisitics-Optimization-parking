@@ -150,13 +150,13 @@ public static void main(String[] args) {
 						if(k > 0){
               // If the current position has a higher time than the front one and we are sure there is a car there we set the literal to 1
               // OR if they both have the same time, we set the literal to 1, but the program will not check this case so it does not matter
-							if(Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k+1]) || Integer.parseInt(arrival[i][k]) == Integer.parseInt(arrival[i][k+1])){
+							if(Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k+1]) || Integer.parseInt(arrival[i][k]) == Integer.parseInt(arrival[i][k-1])){
 								// We set the literal to true (current car arrived later)
 								literalTimeBehind[i][k] = satWrapper.cpVarToBoolVar(timeBehind[i][k], 1, true);
 								addClause(satWrapper,literalTimeBehind[i][k]);
 							}
 							// If the current position has a lower time than the front one we set the literal to 1
-							if(Integer.parseInt(arrival[i][k]) < Integer.parseInt(arrival[i][k+1])) {
+							if(Integer.parseInt(arrival[i][k]) < Integer.parseInt(arrival[i][k-1])) {
 								literalTimeBehind[i][k] = satWrapper.cpVarToBoolVar(timeFront[i][k], 1, true);
 								addClause(satWrapper,-literalTimeBehind[i][k]);
 							}

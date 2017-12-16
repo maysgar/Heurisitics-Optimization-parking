@@ -247,8 +247,6 @@ public static void main(String[] args) {
 					}
 				}
 
-				String[] move = new String[]{">>","<<"};
-        String[][] parkingOut = new String[lane_number][locations];
 				boolean[][] blocked = new boolean[lane_number][locations];
 				//Right position that sets in between position free == 0; Left position == 1
 				boolean[][][] pos = new boolean[lane_number][locations][2];
@@ -323,40 +321,53 @@ public static void main(String[] args) {
 						 new SmallestDomain<BooleanVar>(), new IndomainMin<BooleanVar>());
 				Boolean result = search.labeling(store, select);
 
+        String[] move = new String[]{">>","<<"};
+        String[][] parkingOut = new String[lane_number][locations];
 				//If result is true -> car is not blocked
 				if(result){
-					PrintWriter writer = new PrintWriter("map.output","UTF-8");
-					System.out.println("Satisfiable: No Car Blocked");
+          //Take name of the inputfile
+          String newFile = "";
+          for (int i=0; i<filename.length(); i++) {
+            if(filename.charAt(i) == '.'){
+              newFile = filename.substring(0,i);
+              break;
+            }
+          }
+
+					PrintWriter writer = new PrintWriter(newFile+".output","UTF-8");
 					for(int i = 0; i<lane_number; i++){
 						for(int k = 0; k<locations; k++){
 							if(parking[i][k].equals("__")){
-								writer.print("__");
+								writer.println("__ ");
 							}
 							else if(k == 0){
 								//Move to the left if its in the far left column
                 parkingOut[i][k] = move[1];
-								writer.print(parkingOut[i][k]+" ");
+								writer.println(parkingOut[i][k]+" ");
 							}
 							else if(k == (locations-1)){
 								//Move to the right if its in the far right column
                 parkingOut[i][k] = move[0];
-								writer.print(parkingOut[i][k]+" ");
+								writer.println(parkingOut[i][k]+" ");
 							}
 							else if(!blocked[i][k] && pos[i][k][0]){
 								//Move right
                 parkingOut[i][k] = move[0];
-								writer.print(parkingOut[i][k]+" ");
+								writer.println(parkingOut[i][k]+" ");
 							}
 							else if(!blocked[i][k] && pos[i][k][1]){
 								//Move left
                 parkingOut[i][k] = move[1];
-								writer.print(parkingOut[i][k]+" ");
+								writer.println(parkingOut[i][k]+" ");
 							}
 							else{
 								continue;
 							}
+              if(k==(locations-1)) writer.println("\n");
+
 						}
 					}
+          writer.close();
 				}
 				else{System.out.println("Unsatisfiable: One or More Cars Are Blocked");}
 

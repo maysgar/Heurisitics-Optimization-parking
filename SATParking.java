@@ -50,7 +50,7 @@ public static void main(String[] args) {
                 for(int i = 0; i < lane_number; i++){
                   for(int k = 0; k < locations; k++){
                     category[i][k] = String.valueOf(parking[i][k].charAt(0));
-		    
+
                   }
                 }
 
@@ -70,7 +70,7 @@ public static void main(String[] args) {
                 Store store = new Store();
                 SatWrapper satWrapper = new SatWrapper();
                 store.impose(satWrapper);
-		
+
 				// True if current car has arrived after the front one
                 BooleanVar[][] timeFront = new BooleanVar[lane_number][locations];
 				// True if current car has arrived after the one behind
@@ -110,16 +110,18 @@ public static void main(String[] args) {
 						// If we are not in the last position of a lane
 						if(k < (locations-1)){
 							// If the current position has a higher time than the front one and we are sure there is a car there we set the literal to 1
-							if((Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k+1])) && Integer.parseInt(arrival[i][k+1])!=0){
+              // OR if they both have the same time, we set the literal to 1, but the program will not check this case so it does not matter
+							if(Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k+1]) || Integer.parseInt(arrival[i][k]) == Integer.parseInt(arrival[i][k+1])){
 								// We set the literal to true (current car arrived later)
 								literalTimeFront[i][k] = satWrapper.cpVarToBoolVar(timeFront[i][k], 1, true);
 								addClause(satWrapper,literalTimeFront[i][k]);
 							}
-							// If the current position has a lower time than the front one we set the literal to 0
-							else {
+							// If the current position has a lower time than the front one we set the literal to 1
+							if(Integer.parseInt(arrival[i][k]) < Integer.parseInt(arrival[i][k+1])) {
 								literalTimeFront[i][k] = satWrapper.cpVarToBoolVar(timeFront[i][k], 1, true);
 								addClause(satWrapper,-literalTimeFront[i][k]);
 							}
+
 							// If the current car category is higher than the front one AND we know there is a car there
 							// OR there is no car in the current position
 							// OR the current car has the same category as the front one
@@ -146,18 +148,19 @@ public static void main(String[] args) {
 						}
 						// If we are not in the first position of the lane
 						if(k > 0){
-							// If the current position has a higher time than the front one and we are sure there is a car there we set the literal to 1
-							if((Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k-1])) && Integer.parseInt(arrival[i][k-1])!=0){
+              // If the current position has a higher time than the front one and we are sure there is a car there we set the literal to 1
+              // OR if they both have the same time, we set the literal to 1, but the program will not check this case so it does not matter
+							if(Integer.parseInt(arrival[i][k]) > Integer.parseInt(arrival[i][k+1]) || Integer.parseInt(arrival[i][k]) == Integer.parseInt(arrival[i][k+1])){
 								// We set the literal to true (current car arrived later)
 								literalTimeBehind[i][k] = satWrapper.cpVarToBoolVar(timeBehind[i][k], 1, true);
 								addClause(satWrapper,literalTimeBehind[i][k]);
 							}
-							// If the current position has a lower time than the front one we set the literal to 0
-							else {
-								literalTimeBehind[i][k] = satWrapper.cpVarToBoolVar(timeBehind[i][k], 1, true);
+							// If the current position has a lower time than the front one we set the literal to 1
+							if(Integer.parseInt(arrival[i][k]) < Integer.parseInt(arrival[i][k+1])) {
+								literalTimeBehind[i][k] = satWrapper.cpVarToBoolVar(timeFront[i][k], 1, true);
 								addClause(satWrapper,-literalTimeBehind[i][k]);
 							}
-							// If the current position has a bigger category than the car behind AND we are sure there is a car there 
+							// If the current position has a bigger category than the car behind AND we are sure there is a car there
 							// OR there is no car in the current position
 							// OR the current car has the same category as the one behind
 							if(((category[i][k].charAt(0) > category[i][k-1].charAt(0)) && !parking[i][k-1].equals("__")) || parking[i][k].equals("__") || category[i][k].equals(category[i][k-1])){
@@ -165,7 +168,7 @@ public static void main(String[] args) {
 								literalCarBehindCat[i][k] = satWrapper.cpVarToBoolVar(carBehindCat[i][k], 1, true);
 								addClause(satWrapper,-literalCarBehindCat[i][k]);
 							}
-							// For the rest of the cases 
+							// For the rest of the cases
 							else{
 								// We set the literal to 1
 								literalCarBehindCat[i][k] = satWrapper.cpVarToBoolVar(carBehindCat[i][k], 1, true);
@@ -184,7 +187,7 @@ public static void main(String[] args) {
 								addClause(satWrapper,-literalSameBehindCat[i][k]);
 							}
 						}
-					}	  
+					}
                 }
 
 				BooleanVar[] allVariables = new BooleanVar[locations*lane_number*6];
@@ -225,13 +228,13 @@ public static void main(String[] args) {
 						count++;
 					}
 				}
-						
+
 				String[] move = new String[]{"move Right","move Left"};
 				boolean[][] blocked = new boolean[lane_number][locations];
 				//Right position that sets in between position free == 0; Left position == 1
 				boolean[][][] pos = new boolean[lane_number][locations][2];
-				
-				//Loop checking if car is blocked by brute force conditions to set up a boolean var 
+
+				//Loop checking if car is blocked by brute force conditions to set up a boolean var
 				for(int i = 0; i<lane_number; i++){
 					for(int k = 1; k<locations-1; k++){
 						switch(category[i][k]){
@@ -282,9 +285,9 @@ public static void main(String[] args) {
 				//Constraints
 				for (int i = 0; i<lane_number; i++) {
 					for (int k = 0; k<locations; k++) {
-						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalSameBehindCat[i][k]); 
-						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalTimeBehind[i][k]);  
-						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeFront[i][k]); 
+						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalSameBehindCat[i][k]);
+						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameFrontCat[i][k],literalTimeBehind[i][k]);
+						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeFront[i][k]);
 						addClause(satWrapper,-literalCarFrontCat[i][k],-literalCarBehindCat[i][k],literalSameBehindCat[i][k],literalTimeBehind[i][k]);
 					}
 				}
@@ -293,7 +296,7 @@ public static void main(String[] args) {
 				Search<BooleanVar> search = new DepthFirstSearch<BooleanVar>();
 				SelectChoicePoint<BooleanVar> select = new SimpleSelect<BooleanVar>(allVariables,
 						 new SmallestDomain<BooleanVar>(), new IndomainMin<BooleanVar>());
-				Boolean result = search.labeling(store, select);	
+				Boolean result = search.labeling(store, select);
 
 				//If result is true -> car is not blocked
 				if(result){
@@ -313,7 +316,7 @@ public static void main(String[] args) {
 								System.out.println("Car in pos: [" + i + "," + k + "] has to " + move[0]);
 							}
 							else if(!blocked[i][k] && pos[i][k][0]){
-								//Move right 
+								//Move right
 								System.out.println("Car in pos: [" + i + "," + k + "] has to " + move[0]);
 							}
 							else if(!blocked[i][k] && pos[i][k][1]){

@@ -13,7 +13,7 @@ int main(int argc, char const *argv[]){
       return false;
     }
 
-  vector <string> initVector;
+  std::vector <string> initVector;
   string initData;
   //open init map
   ifstream inFile(argv[1]);
@@ -24,7 +24,7 @@ int main(int argc, char const *argv[]){
   //close init file
   inFile.close();
 
-  vector <string> finVector;
+  std::vector <string> finVector;
   string finData;
   //open final map
   ifstream finFile(argv[2]);
@@ -47,7 +47,7 @@ int main(int argc, char const *argv[]){
   int checkEmpty(initVector, finVector);
 
   //vector to store the distance difference between car in first map and second map
-  vector <int> distance;
+  std::vector <int> distance;
   int rows = stoi(initVector[0]);
   int columns = stoi(initVector[1]);
   // int firstRow;
@@ -75,7 +75,7 @@ int main(int argc, char const *argv[]){
     return 0;
 }
 
-int checkEmpty(std::vector <string> init, std::vector<string> fin){
+int checkEmpty(std::vector <string> init, std::vector <string> fin){
   int initEmpty = 0;
   int finEmpty = 0;
   for(int i= 0; i < init.size(); ++i){

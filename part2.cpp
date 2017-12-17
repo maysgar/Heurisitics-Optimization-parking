@@ -3,6 +3,25 @@
 #include <vector>
 #include <string>
 
+using namespace std;
+
+
+int checkEmpty(std::vector <string> init, std::vector <string> fin){
+  int initEmpty = 0;
+  int finEmpty = 0;
+  for(int i= 0; i < init.size(); ++i){
+    if(init[i] == "__"){
+      ++initEmpty;
+    }
+    if(fin[i] == "__"){
+      ++finEmpty;
+    }
+  }
+  if(initEmpty == 0 || finEmpty == 0){
+    std::cerr << "There are no emppty spaces"<< std::endl;
+    return -1;
+    }
+}
 
 int main(int argc, char const *argv[]){
 
@@ -34,7 +53,7 @@ int main(int argc, char const *argv[]){
     finVector.push_back(finData);
   }
   //remove the end of file from the last position of the vector
-  finVector.pop_back(finData);
+  finVector.pop_back();
 
   finFile.close();
 
@@ -44,7 +63,7 @@ int main(int argc, char const *argv[]){
   }
 
   //check the maps have empty positions
-  int checkEmpty(initVector, finVector);
+  checkEmpty(initVector, finVector);
 
   //vector to store the distance difference between car in first map and second map
   std::vector <int> distance;
@@ -75,19 +94,3 @@ int main(int argc, char const *argv[]){
     return 0;
 }
 
-int checkEmpty(std::vector <string> init, std::vector <string> fin){
-  int initEmpty = 0;
-  int finEmpty = 0;
-  for(int i= 0; i < init.size(); ++i){
-    if(init[i] == "__"){
-      ++initEmpty;
-    }
-    if(fin[i] == "__"){
-      ++finEmpty;
-    }
-  }
-  if(initEmpty == 0 || finEmpty == 0){
-    std::cerr << "There are no emppty spaces"<< std::endl;
-    return -1;
-    }
-}

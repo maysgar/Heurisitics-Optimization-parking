@@ -126,13 +126,11 @@ public static void main(String[] args) {
   								// We set the literal to true (current car arrived later)
   								literalTimeFront[i][k] = satWrapper.cpVarToBoolVar(timeFront[i][k], 1, true);
   								addClause(satWrapper,literalTimeFront[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in if 1 (time front)");
   							}
   							// If the current position has a lower time than the front one we set the literal to 1
   							if(Integer.parseInt(arrival[i][k]) < Integer.parseInt(arrival[i][k+1])) {
   								literalTimeFront[i][k] = satWrapper.cpVarToBoolVar(timeFront[i][k], 1, true);
   								addClause(satWrapper,-literalTimeFront[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in else 1 (time front)");
   							}
 
   							// If the current car category is higher than the front one AND we know there is a car there
@@ -142,25 +140,21 @@ public static void main(String[] args) {
   								// We set the literal to 1
   								literalCarFrontCat[i][k] = satWrapper.cpVarToBoolVar(carFrontCat[i][k], 1, true);
   								addClause(satWrapper,literalCarFrontCat[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in if 2 (car category front)");
   							}
   							// In the rest if the cases the literal is set to 0
   							else{
   								literalCarFrontCat[i][k] = satWrapper.cpVarToBoolVar(carFrontCat[i][k], 1, true);
   								addClause(satWrapper,-literalCarFrontCat[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in else 2 (car category front)");
   							}
   							// If the car in current position has the same category as the front one AND we know there is a car there, we set the literal to 1
   							if(category[i][k].equals(category[i][k+1]) && !parking[i][k+1].equals("__")){
   								literalSameFrontCat[i][k] = satWrapper.cpVarToBoolVar(sameFrontCat[i][k], 1, true);
   								addClause(satWrapper,literalSameFrontCat[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in if 3 (car same category front)");
   							}
   							// In the rest of the cases we set the literal to 0
   							else{
   								literalSameFrontCat[i][k] = satWrapper.cpVarToBoolVar(sameFrontCat[i][k], 1, true);
   								addClause(satWrapper,-literalSameFrontCat[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in else 3 (car same category front)");
   							}
   						}
   						// If we are not in the first position of the lane
@@ -171,13 +165,11 @@ public static void main(String[] args) {
   								// We set the literal to true (current car arrived later)
   								literalTimeBehind[i][k] = satWrapper.cpVarToBoolVar(timeBehind[i][k], 1, true);
   								addClause(satWrapper,literalTimeBehind[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in if 4 (time behind)");
   							}
   							// If the current position has a lower time than the front one we set the literal to 1
   							if(Integer.parseInt(arrival[i][k]) < Integer.parseInt(arrival[i][k-1])) {
   								literalTimeBehind[i][k] = satWrapper.cpVarToBoolVar(timeFront[i][k], 1, true);
   								addClause(satWrapper,-literalTimeBehind[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in else 4 (time behind)");
   							}
   							// If the current position has a bigger category than the car behind AND we are sure there is a car there
   							// OR there is no car in the current position
@@ -186,28 +178,24 @@ public static void main(String[] args) {
   								// We set the literal to 1
   								literalCarBehindCat[i][k] = satWrapper.cpVarToBoolVar(carBehindCat[i][k], 1, true);
   								addClause(satWrapper,literalCarBehindCat[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in if 5 (car category behind)");
   							}
   							// For the rest of the cases
   							else{
   								// We set the literal to 0
   								literalCarBehindCat[i][k] = satWrapper.cpVarToBoolVar(carBehindCat[i][k], 1, true);
   								addClause(satWrapper,-literalCarBehindCat[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in else 5 (car category behind)");
   							}
   							// If the current category is the same as the car behind AND we are sure there is a car there
   							if(category[i][k].equals(category[i][k-1]) && !parking[i][k-1].equals("__")){
   								// We set the literal to 1
   								literalSameBehindCat[i][k] = satWrapper.cpVarToBoolVar(sameBehindCat[i][k], 1, true);
   								addClause(satWrapper,literalSameBehindCat[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in if 6 (car same category behind)");
   							}
   							// For the rest of the cases
   							else{
   								// We set the literal to 0
   								literalSameBehindCat[i][k] = satWrapper.cpVarToBoolVar(sameBehindCat[i][k], 1, true);
   								addClause(satWrapper,-literalSameBehindCat[i][k]);
-                  //System.out.println("Car "+parking[i][k]+" in else 6 (car same category behind)");
   							}
   						}
             }
@@ -259,8 +247,6 @@ public static void main(String[] args) {
 					}
 				}
 
-				String[] move = new String[]{">>","<<"};
-        String[][] parkingOut = new String[lane_number][locations];
 				boolean[][] blocked = new boolean[lane_number][locations];
 				//Right position that sets in between position free == 0; Left position == 1
 				boolean[][][] pos = new boolean[lane_number][locations][2];
@@ -335,41 +321,53 @@ public static void main(String[] args) {
 						 new SmallestDomain<BooleanVar>(), new IndomainMin<BooleanVar>());
 				Boolean result = search.labeling(store, select);
 
+        String[] move = new String[]{">>","<<"};
+        String[][] parkingOut = new String[lane_number][locations];
 				//If result is true -> car is not blocked
 				if(result){
-          String newFile = filename.subString(0,charAt('.'))+"output";
-					PrintWriter writer = new PrintWriter(newFile,"UTF-8");
-					System.out.println("Satisfiable: No Car Blocked");
+          //Take name of the inputfile
+          String newFile = "";
+          for (int i=0; i<filename.length(); i++) {
+            if(filename.charAt(i) == '.'){
+              newFile = filename.substring(0,i);
+              break;
+            }
+          }
+
+					PrintWriter writer = new PrintWriter(newFile+".output","UTF-8");
 					for(int i = 0; i<lane_number; i++){
 						for(int k = 0; k<locations; k++){
 							if(parking[i][k].equals("__")){
-								writer.print("__");
+								writer.println("__ ");
 							}
 							else if(k == 0){
 								//Move to the left if its in the far left column
                 parkingOut[i][k] = move[1];
-								writer.print(parkingOut[i][k]+" ");
+								writer.println(parkingOut[i][k]+" ");
 							}
 							else if(k == (locations-1)){
 								//Move to the right if its in the far right column
                 parkingOut[i][k] = move[0];
-								writer.print(parkingOut[i][k]+" ");
+								writer.println(parkingOut[i][k]+" ");
 							}
 							else if(!blocked[i][k] && pos[i][k][0]){
 								//Move right
                 parkingOut[i][k] = move[0];
-								writer.print(parkingOut[i][k]+" ");
+								writer.println(parkingOut[i][k]+" ");
 							}
 							else if(!blocked[i][k] && pos[i][k][1]){
 								//Move left
                 parkingOut[i][k] = move[1];
-								writer.print(parkingOut[i][k]+" ");
+								writer.println(parkingOut[i][k]+" ");
 							}
 							else{
 								continue;
 							}
+              if(k==(locations-1)) writer.println();
+
 						}
 					}
+          writer.close();
 				}
 				else{System.out.println("Unsatisfiable: One or More Cars Are Blocked");}
 

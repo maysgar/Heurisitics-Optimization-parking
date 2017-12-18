@@ -5,7 +5,7 @@
 
 using namespace std;
 
-
+//method to make sure the maps have empty spots
 int checkEmpty(std::vector <string> init, std::vector <string> fin){
   int initEmpty = 0;
   int finEmpty = 0;
@@ -22,6 +22,38 @@ int checkEmpty(std::vector <string> init, std::vector <string> fin){
     return -1;
     }
 }
+
+//method to print the map configurations
+int printVectors(std::vector <string> init, int rows, int columns){
+  std::cout << "\n";
+  int j = 0;
+  for(int i = 0; i < rows; ++i){
+       for(int j = 0; j < columns; ++j){       
+          std::cout << init[i*columns+j] << " ";
+     }
+  std::cout << "\n";
+  }
+ std::cout << "\n";
+}
+
+//method to generate the vectors of the maps
+/*void fillVector(std::vector <string> vector, ifstream file){
+  string data;
+  //open final map;
+
+  while(!file.eof()){
+    file >> data;
+    vector.push_back(data);
+  }
+  //close file
+  file.close();
+  //erase the first two positions of the vector (rows and columns)
+  vector.erase(vector.begin());
+  vector.erase(vector.begin());
+  //remove the end of file from the last position of the vector
+  vector.pop_back();
+}*/
+ 
 
 int main(int argc, char const *argv[]){
 
@@ -40,8 +72,19 @@ int main(int argc, char const *argv[]){
     inFile >> initData;
     initVector.push_back(initData);
   }
+
   //close init file
   inFile.close();
+
+  int rows = stoi(initVector[0]);
+  int columns = stoi(initVector[1]);
+
+  //erase the first two positions of the vector (rows and columns)
+  initVector.erase(initVector.begin());
+  initVector.erase(initVector.begin());
+  //remove the end of file from the last position of the vector
+  initVector.pop_back();
+  
 
   std::vector <string> finVector;
   string finData;
@@ -52,23 +95,19 @@ int main(int argc, char const *argv[]){
     finFile >> finData;
     finVector.push_back(finData);
   }
+  //close file
+  finFile.close();
+  //erase the first two positions of the vector (rows and columns)
+  finVector.erase(finVector.begin());
+  finVector.erase(finVector.begin());
   //remove the end of file from the last position of the vector
   finVector.pop_back();
-
-  finFile.close();
-
-  if(initVector[0] != finVector[0] || initVector[1] != finVector[1] ){
-    std::cerr << "The input maps do not have the same size"<< std::endl;
-    return false;
-  }
 
   //check the maps have empty positions
   checkEmpty(initVector, finVector);
 
   //vector to store the distance difference between car in first map and second map
   std::vector <int> distance;
-  int rows = stoi(initVector[0]);
-  int columns = stoi(initVector[1]);
   // int firstRow;
   // int firstCol;
   // int secRow;
@@ -88,9 +127,13 @@ int main(int argc, char const *argv[]){
     }
   }
 
+  std::cout << "Initial map" << std::endl;
+  printVectors(initVector, rows, columns);
+  std::cout << "Final map" << std::endl;
+  printVectors(finVector, rows, columns);
 
+  
 
-
-    return 0;
+  return 0;
 }
 

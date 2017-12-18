@@ -210,10 +210,11 @@ public static void main(String[] args) {
 
         // Add all clauses
         for (int i=0; i<N; i++) for (int k=0; k<L-1; k++){
+          addClause(satWrapper,literalEmpty[i][k],literalEdge[i][k],literalLowCatNext[i][k],literalLowCatBehind[i][k],literalAfterBehind[i][k],literalAfterNext[i][k]);
+	  addClause(satWrapper,literalEmpty[i][k],literalEdge[i][k],literalLowCatNext[i][k],literalLowCatBehind[i][k],literalSameCategoryNext[i][k],literalAfterBehind[i][k]);
           addClause(satWrapper,literalEmpty[i][k],literalEdge[i][k],literalLowCatNext[i][k],literalLowCatBehind[i][k],literalSameCategoryBehind[i][k],literalSameCategoryNext[i][k]);
           addClause(satWrapper,literalEmpty[i][k],literalEdge[i][k],literalLowCatNext[i][k],literalLowCatBehind[i][k],literalSameCategoryBehind[i][k],literalAfterNext[i][k]);
-          addClause(satWrapper,literalEmpty[i][k],literalEdge[i][k],literalLowCatNext[i][k],literalLowCatBehind[i][k],literalSameCategoryNext[i][k],literalAfterBehind[i][k]);
-          addClause(satWrapper,literalEmpty[i][k],literalEdge[i][k],literalLowCatNext[i][k],literalLowCatBehind[i][k],literalAfterBehind[i][k],literalAfterNext[i][k]);
+          
         }
 
         BooleanVar[] allVariables = new BooleanVar[N*L*8]; int count = 0;
@@ -249,14 +250,14 @@ public static void main(String[] args) {
               System.out.println("Error creating '" + filename + "'");
           }
 	  for(int i = 0; i<N; i++) for(int k = 0; k<L; k++){
-			if(parking[i][k].equals("__")){
+			if(empty[i][k].dom().value() == 1){
 				writer.print("__ ");
 			}
-			else if(k == 0){
+			else if(edge[i][k].dom().value() == 1 && k == 0){
 				//Move to the left if its in the far left column
 				writer.print("<< ");
 			}
-			else if(k == (L-1)){
+			else if(edge[i][k].dom().value() == 1 && k == (L-1)){
 				//Move to the right if its in the far right column
 				writer.print(">> ");
 			}
@@ -268,7 +269,6 @@ public static void main(String[] args) {
 				//Move right
 				writer.print(">> ");
 			}
-			else continue;
 			if(k==(L-1)) writer.print("\n");
 		}
 		writer.close();

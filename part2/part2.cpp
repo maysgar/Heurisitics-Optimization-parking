@@ -47,6 +47,7 @@ std::vector<node> astar_algorithm(std::vector<string> start, std::vector<string>
   std::vector<node> closedList;
   std::vector<node> neighbours;
   std::vector<node> final_path;
+  using clk = std::chrono::high_resolution_clock;
   int idCount = 0;
 
   node startNode, goalNode;
@@ -72,8 +73,8 @@ std::vector<node> astar_algorithm(std::vector<string> start, std::vector<string>
 
     current = compute_min(openList,openList.size());
 
-    cout << "Heuristic: " << current.h << endl;
-    printVectors(current.parking,rows,columns);
+    //cout << "Heuristic: " << current.h << endl;
+   // printVectors(current.parking,rows,columns);
 
     //current has heuristic = 0 -> goal state
     if(current.h == 0){
@@ -84,7 +85,7 @@ std::vector<node> astar_algorithm(std::vector<string> start, std::vector<string>
 	}
       }
       final_path.push_back(current);
-     
+ 
     printInfo(final_path, final_path[0].g, openList.size());
     return final_path;
     }
@@ -271,7 +272,7 @@ int getHeuristic(std::vector<string> parking, std::vector<string> goal, int rows
 void printInfo(std::vector<node> final_path, int cost, int size){
 	std::ofstream outfile("result.info");
 	outfile << "Step length: "<< final_path.size() << std::endl;
-        outfile << "Running time (seconds): "<< std::endl;
+        outfile << "Running time (seconds): " <<  std::endl;
 	outfile << "Total cost: "<< cost << std::endl;
 	outfile << "Expansions: "<< size << std::endl; 
   // Close the file
@@ -329,12 +330,12 @@ int main(int argc, char const *argv[]){
   vector<node> result;
 
   result = astar_algorithm(initVector,finVector,rows,columns);
-  cout << "Size of result of A*: " << result.size() << endl;
+  //cout << "Size of result of A*: " << result.size() << endl;
   
-  auto t2 = clk::now();
-  auto diff = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
+  //auto t2 = clk::now();
+  //auto diff = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
 
-  for(int i=0; i<result.size(); i++) printVectors(result[i].parking,rows,columns);
+  //for(int i=0; i<result.size(); i++) printVectors(result[i].parking,rows,columns);
 
   return 0;
 }

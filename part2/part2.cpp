@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <chrono>
 
 using namespace std;
 
@@ -21,6 +22,7 @@ node compute_min(std::vector<node> a, int size);
 int getHeuristic(std::vector<string> parking, std::vector<string> goal, int rows, int columns, string position);
 std::vector<node> getNeighbours(node father, std::vector<string> goal, int rows, int columns, int id);
 int getCost(vector <string> parking, int lane_number, int loc, int initial_lane_number, int initial_loc, int locations);
+void printInfo(std::vector<node> final_path, int cost, int size);
 
 //method to make sure the maps have empty spots
 int checkEmpty(std::vector <string> init, std::vector <string> fin){
@@ -82,6 +84,8 @@ std::vector<node> astar_algorithm(std::vector<string> start, std::vector<string>
 	}
       }
       final_path.push_back(current);
+     
+    printInfo(final_path, final_path[0].g, openList.size());
     return final_path;
     }
 
@@ -107,6 +111,8 @@ std::vector<node> astar_algorithm(std::vector<string> start, std::vector<string>
       if(aux==closedList.size()) openList.push_back(neighbours[i]);
     }
   } //While loop
+  
+
   return final_path;
 }
 
@@ -262,7 +268,20 @@ int getHeuristic(std::vector<string> parking, std::vector<string> goal, int rows
   return abs(inRow-finRow)+abs(inCol-finCol);
 }
 
+void printInfo(std::vector<node> final_path, int cost, int size){
+  ofstream outfile("result.info");
+  outfile << "Step length: "<< final_path << endl;
+  outfile << "Running time (seconds): "<< endl;
+  outfile << "Total cost: "<< cost << endl;
+  outfile << "Expansions: "<< size << endl; 
+  // Close the file
+  outfile.close();
+}
+
 int main(int argc, char const *argv[]){
+
+    using clk = std::chrono::high_resolution_clock;
+    auto t1 = clk::now();
 
     // Check we have 3 parameters (name of the program + init map + final map)
     if (argc != 3) {
@@ -311,6 +330,9 @@ int main(int argc, char const *argv[]){
 
   result = astar_algorithm(initVector,finVector,rows,columns);
   cout << "Size of result of A*: " << result.size() << endl;
+  
+  auto t2 = clk::now();
+  auto diff = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1);
 
   for(int i=0; i<result.size(); i++) printVectors(result[i].parking,rows,columns);
 

@@ -269,11 +269,11 @@ int getHeuristic(std::vector<string> parking, std::vector<string> goal, int rows
 }
 
 void printInfo(std::vector<node> final_path, int cost, int size){
-  ofstream outfile("result.info");
-  outfile << "Step length: "<< final_path << endl;
-  outfile << "Running time (seconds): "<< endl;
-  outfile << "Total cost: "<< cost << endl;
-  outfile << "Expansions: "<< size << endl; 
+	std::ofstream outfile("result.info");
+	outfile << "Step length: "<< final_path.size() << std::endl;
+        outfile << "Running time (seconds): "<< std::endl;
+	outfile << "Total cost: "<< cost << std::endl;
+	outfile << "Expansions: "<< size << std::endl; 
   // Close the file
   outfile.close();
 }

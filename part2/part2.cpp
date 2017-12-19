@@ -12,13 +12,12 @@ struct node{
   int g;
   int h;
   std::vector<string> parking;
-  node *parentNode;
+  int parentNode;
   bool parent;
 };
 
-bool isEmpty(std::vector<std::vector<node> > v);
-node getFLeastValue(std::vector<std::vector<node> > a);
-node compute_min(std::vector<node> set, int size);
+void printVectors(std::vector<string> init, int rows, int columns);
+node compute_min(std::vector<node> a, int size);
 int getHeuristic(std::vector<string> parking, std::vector<string> goal, int rows, int columns, string position);
 std::vector<node> getNeighbours(node father, std::vector<string> goal, int rows, int columns, int id);
 int getCost(vector <string> parking, int lane_number, int loc, int initial_lane_number, int initial_loc, int locations);
@@ -41,8 +40,78 @@ int checkEmpty(std::vector <string> init, std::vector <string> fin){
     }
 }
 
+std::vector<node> astar_algorithm(std::vector<string> start, std::vector<string> goal, int rows, int columns){
+  std::vector<node> openList;
+  std::vector<node> closedList;
+  std::vector<node> neighbours;
+  std::vector<node> final_path;
+  int idCount = 0;
+
+  node startNode, goalNode;
+  //Initialization of start node
+  startNode.parking = start;
+  startNode.id = idCount;
+  startNode.parentNode = -1;
+  startNode.parent = false;
+  //Set heuristic of start node by checking if car of the start parking input with respect to the goal 
+  startNode.h = 0;
+  for(int i=0; i<rows; i++) for(int k=0; k<columns; k++){
+    startNode.h += getHeuristic(start,goal,rows,columns,start[i*columns+k]);
+  }
+  startNode.g = 0;
+  startNode.f = startNode.h + startNode.g;
+
+  //Insert in openList
+  openList.push_back(startNode);
+
+  while(!openList.empty()){
+    node current;
+    int min;
+
+    current = compute_min(openList,openList.size());
+
+    cout << "Heuristic: " << current.h << endl;
+    printVectors(current.parking,rows,columns);
+
+    //current has heuristic = 0 -> goal state
+    if(current.h == 0){
+      while(current.parent){
+        final_path.push_back(current);
+        for(int i=0; i<closedList.size(); i++){
+            if(current.parentNode==closedList[i].id) current = closedList[i];
+	}
+      }
+      final_path.push_back(current);
+    return final_path;
+    }
+
+    // Erase from open list current expanded and add to close list
+    for(int j=0; j<openList.size(); j++){
+      if(current.parking == openList[j].parking) openList.erase(openList.begin()+j);
+    }
+    closedList.push_back(current);
+    
+    //Neighbours  
+    neighbours = getNeighbours(current,goal,rows,columns,idCount);  
+    idCount = neighbours[neighbours.size()-1].id;
+
+    for (int i=0; i<neighbours.size(); i++) {
+    int aux = 0;
+      for(int j=0; j<closedList.size(); j++){
+        int aux_ = 0;
+        for(int k=0; k<rows; k++) for(int l=0; l<columns; l++){
+            if(neighbours[i].parking[k*columns+l]!=closedList[j].parking[k*columns+l]) aux_++;
+        }
+        if(aux_!=0) aux++;
+      }
+      if(aux==closedList.size()) openList.push_back(neighbours[i]);
+    }
+  } //While loop
+  return final_path;
+}
+
 //method to print the map configurations
-int printVectors(std::vector <string> init, int rows, int columns){
+void printVectors(std::vector <string> init, int rows, int columns){
   std::cout << "\n";
   int j = 0;
   for(int i = 0; i < rows; ++i){
@@ -54,104 +123,6 @@ int printVectors(std::vector <string> init, int rows, int columns){
  std::cout << "\n";
 }
 
-bool isEmpty(std::vector<std::vector<int> > v){
-  for(int i=0; i<v.size(); i++){
-    if(!v[i].empty()) return false;
-  }
-  return true;
-}
-
-node pop_front(std::vector< std::vector<node> > a){
-  node minF;
-  for(int i=0; i<a.size(); i++){
-    if(!a.empty()){
-      minF = a[i][0];    
-      a.erase(a.begin());
-      break;
-    }
-  }
-  return minF;
-}
-
-std::vector<node> astar_algorithm(std::vector<string> start, std::vector<string> goal, int rows, int columns){
-  std::vector< std::vector<node> >openList(32135463528561);  
-  std::vector<node> closedList;
-  std::vector<node> neighbours;
-  std::vector<node> final_path;
-  std::vector<node> fail;
-  int idCount = 0;
-  int aux;
-
-  node startNode, goalNode;
-  //Initialization of start node
-  startNode.parking = start;
-  startNode.id = idCount;
-  startNode.parentNode = NULL;
-  startNode.parent = false;
-  //Set heuristic of start node by checking if car of the start parking input with respect to the goal 
-  for(int i=0; i<rows; i++) for(int k=0; k<columns; k++){
-    startNode.h += getHeuristic(start,goal,rows,columns,start[i*columns+k]);
-  }
-  startNode.g = 0;
-  startNode.f = startNode.h + startNode.g;
-
-  //Initialization of end node
-  goalNode.id = -1;
-  goalNode.parking = goal;
-  goalNode.parent = true;
-
-  //Insert in openList
-  (openList[startNode.f]).push_back(startNode);
-
-  while(!isEmpty(openList)){
-    node current;
-
-    current = pop_front(openList);
-
-    //current has heuristic = 0 -> goal state
-    if(current.h == 0){
-      while(current.parent){
-        final_path.push_back(current);
-        current.parent = current.parentNode->parent;
-      }
-      final_path.push_back(current);
-    return final_path;
-    }
-
-    // Erase from open list current expanded and add to close list
-    openList[current.f].pop_back();
-    closedList.push_back(current);
-    
-    //Neighbours
-    neighbours = getNeighbours(current,goal,rows,columns,idCount);
-    for(int i=0; i<neighbours.size(); i++) (openList[neighbours[i].f]).push_back(neighbours[i]);
-
-    aux = 0;
-    int tentative_gScore;
-    for(int i=0; i<neighbours.size(); i++){
-      for(int j=0; j<closedList.size(); j++){
-        if(neighbours[i].parking == closedList[j].parking) ++aux;
-       }
-      //If neighbour's parking is already in closedList then skip the whole loop
-      if(aux > 0) continue;
-    
-      for(int i=0; i<rows; i++) for(int j=0; j<columns; j++){
-        for(int k=0; k<rows; k++) for(int l=0; l<columns; l++){
-          tentative_gScore = current.g + getCost(neighbours[i].parking, k, l, i, j, columns);
-        }
-      }
-      
-      if(tentative_gScore >= neighbours[i].g) continue;
-
-      neighbours[i].g = tentative_gScore;
-      neighbours[i].f = neighbours[i].g + neighbours[i].h;      
-    }// End neighbours for loop
-
-
-  } //While loop
-  return fail;
-}
-
 std::vector<node> getNeighbours(node father, std::vector<string> goal, int rows, int columns, int id){
   std::vector<node> children;
   node child;
@@ -159,8 +130,7 @@ std::vector<node> getNeighbours(node father, std::vector<string> goal, int rows,
     for(int k=0; k<rows; k++) for(int l=0; l<columns; l++){
       //If position that we are interested in is not empty and the spot that we want to move is empty...
       if(father.parking[i*columns+j]!="__" && father.parking[k*columns+l]=="__"){
-	//TODO: GETCOST FUNCTION
-        if(getCost(father.parking, k, l, i, j, columns) == -1){
+        if(getCost(father.parking, k, l, i, j, columns) != -1){
 	  
           child.id = id++;
 	  //Update the grid of the child
@@ -168,9 +138,10 @@ std::vector<node> getNeighbours(node father, std::vector<string> goal, int rows,
           child.parking[k*columns+l]=child.parking[i*columns+j];
           child.parking[i*columns+j]="__";
 
-  	  child.parentNode = &father;
+  	  child.parentNode = father.id;
           child.parent = true;
           child.g = getCost(father.parking, k, l, i, j, columns) + father.g;
+          child.h = 0;
 
 	  for(int m=0; m<rows; m++) for(int n=0; n<columns; n++){
             child.h += getHeuristic(child.parking,goal,rows,columns,child.parking[m*columns+n]);
@@ -185,6 +156,22 @@ std::vector<node> getNeighbours(node father, std::vector<string> goal, int rows,
   return children;
 }
 
+node compute_min(vector<node> a, int size){
+  node min;
+  min.f = a[0].f;
+  for(int i=0; i<size; i++){
+    min.id = a[i].id;
+    min.f = a[i].f;
+    min.g = a[i].g;
+    min.h = a[i].h;
+    min.parking = a[i].parking;
+    min.parentNode = a[i].parentNode;
+    min.parent = a[i].parent;
+  }
+  return min;
+}
+
+// This cost function has been developed by Fernando Garcia Sanz & Antonio de Padua & Ismael Garrido & Gabriel Garcia.
 int getCost(vector <string> parking, int lane_number, int loc, int initial_lane_number, int initial_loc, int locations){
   int checker = 0;
         if(lane_number==initial_lane_number) { //Same lane
@@ -194,12 +181,12 @@ int getCost(vector <string> parking, int lane_number, int loc, int initial_lane_
                       if(loc==locations-1){ //If location is final one, check the other way
                         for(int j = initial_loc-1; j>-1; j--){
                           if(parking[lane_number*locations+j]!="__"){
-                              return 5;
+                              return -1;
                             }
                         }
                         return 4;
                       }
-                        return 5;
+                        return -1;
                       }
                     }
                     return 1; //Possible grid -> forward in same lane
@@ -210,12 +197,12 @@ int getCost(vector <string> parking, int lane_number, int loc, int initial_lane_
                       if(loc==0){
                         for(int j = initial_loc+1; j<locations; j++){
                           if(parking[lane_number*locations+j]!="__"){
-                            return 5;
+                            return -1;
                           }
                         }
                         return 3;
                       }
-                        return 5;
+                        return -1;
                       }
                   }
                   return 2; //Possible grid -> backwards in same lane
@@ -236,7 +223,7 @@ int getCost(vector <string> parking, int lane_number, int loc, int initial_lane_
             }
           }
           if(checker==2){ //If blocked by two sides, no possible grid
-            return 5;
+            return -1;
           }
           else{
             if(loc==0) { //Possible grid -> first position of another lane
@@ -247,7 +234,7 @@ int getCost(vector <string> parking, int lane_number, int loc, int initial_lane_
             }
           }
         }
-        return 5;
+        return -1;
 }
 
 int getHeuristic(std::vector<string> parking, std::vector<string> goal, int rows, int columns, string position){
@@ -263,6 +250,8 @@ int getHeuristic(std::vector<string> parking, std::vector<string> goal, int rows
       inCol=j;
       break;
     }
+  }
+  for(int i = 0; i < rows; i++) for (int j = 0; j < columns; j++){
     if(goal[i*columns+j]==position){
       finRow=i;
       finCol=j;
@@ -318,13 +307,12 @@ int main(int argc, char const *argv[]){
 
   //check the maps have empty positions
   checkEmpty(initVector, finVector);
+  vector<node> result;
 
-  std::cout << "Initial map" << std::endl;
-  printVectors(initVector, rows, columns);
-  std::cout << "Final map" << std::endl;
-  printVectors(finVector, rows, columns);
+  result = astar_algorithm(initVector,finVector,rows,columns);
+  cout << "Size of result of A*: " << result.size() << endl;
 
-  astar_algorithm(initVector,finVector,rows,columns);
+  for(int i=0; i<result.size(); i++) printVectors(result[i].parking,rows,columns);
 
   return 0;
 }
